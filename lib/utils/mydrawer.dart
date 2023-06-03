@@ -70,6 +70,14 @@ class _MyDrawerState extends State<MyDrawer> {
                 state.setRouteName("/todolistmysql");
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.dataset),
+              title: const Text('Todolist Firestore'),
+              onTap: () {
+                Navigator.pushNamed(context, "/todolistfirestore");
+                state.setRouteName("/todolistfirestore");
+              },
+            ),
           ],
         ),
       );

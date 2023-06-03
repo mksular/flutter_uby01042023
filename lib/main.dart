@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:myapp/models/state.dart';
 import 'package:myapp/screens/homescreen.dart';
 import 'package:myapp/screens/todolist.dart';
+import 'package:myapp/screens/todolistfirestore.dart';
 import 'package:myapp/screens/todolistmysql.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 
 void main(List<String> args) async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -35,6 +37,7 @@ class MyApp extends StatelessWidget {
         "/": (context) => const HomeScreen(),
         "/todolist": (context) => const TodoList(),
         "/todolistmysql": (context) => const TodoListMysql(),
+        "/todolistfirestore": (context) => const TodoListFirestore(),
       },
     );
   }

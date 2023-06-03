@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/state.dart';
 import 'package:myapp/models/todo.dart';
@@ -7,14 +8,14 @@ import 'package:myapp/utils/mydrawer.dart';
 import 'package:mysql1/mysql1.dart';
 import 'package:provider/provider.dart';
 
-class TodoListMysql extends StatefulWidget {
-  const TodoListMysql({super.key});
+class TodoListFirestore extends StatefulWidget {
+  const TodoListFirestore({super.key});
 
   @override
-  State<TodoListMysql> createState() => _TodoListMysqlState();
+  State<TodoListFirestore> createState() => _TodoListFirestoreState();
 }
 
-class _TodoListMysqlState extends State<TodoListMysql> {
+class _TodoListFirestoreState extends State<TodoListFirestore> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   AutovalidateMode autoValidateMode = AutovalidateMode.disabled;
   late String title;
@@ -26,10 +27,13 @@ class _TodoListMysqlState extends State<TodoListMysql> {
 
   TextEditingController titleController = TextEditingController();
   TextEditingController searchController = TextEditingController();
+  final colRef = FirebaseFirestore.instance.collection("todo");
+  late StateModel state;
 
   @override
   void initState() {
-    mysqlConn();
+    state = Provider.of<StateModel>(context, listen: false);
+    getData();
     super.initState();
   }
 
@@ -104,7 +108,7 @@ class _TodoListMysqlState extends State<TodoListMysql> {
                 child: Container(
                     padding: const EdgeInsets.only(top: 10, bottom: 100),
                     alignment: Alignment.topLeft,
-                    child: state.todoListMysql.isEmpty
+                    child: state.todoListFirestore.isEmpty
                         ? const Center(
                             child: Text("Kayıt bulunamadı"),
                           )
@@ -113,9 +117,9 @@ class _TodoListMysqlState extends State<TodoListMysql> {
                                   height: 2,
                                   color: Colors.white,
                                 ),
-                            itemCount: state.todoListMysql.length,
+                            itemCount: state.todoListFirestore.length,
                             itemBuilder: (BuildContext context, int index) {
-                              var element = state.todoListMysql[index];
+                              var element = state.todoListFirestore[index];
                               return ListTile(
                                 tileColor: element.isComplated!
                                     ? Colors.red[200]
@@ -163,7 +167,8 @@ class _TodoListMysqlState extends State<TodoListMysql> {
                                     InkWell(
                                         onTap: () {
                                           setState(() {
-                                            state.todoListMysql.remove(element);
+                                            state.todoListFirestore
+                                                .remove(element);
                                           });
                                           deleteTodoMysql(element);
                                         },
@@ -222,13 +227,8 @@ class _TodoListMysqlState extends State<TodoListMysql> {
     );
   }
 
-  Future mysqlConn() async {
-    conn = await MySqlConnection.connect(ConnectionSettings(
-        host: '93.89.225.127',
-        port: 3306,
-        user: 'ideftp1_testus',
-        db: 'ideftp1_testdb',
-        password: '123456aA+-'));
+  Future getData() async {
+    await colRef.get().then((value) => debugPrint(value.toString()));
   }
 
   Future addTodo(StateModel state) async {
@@ -248,10 +248,10 @@ class _TodoListMysqlState extends State<TodoListMysql> {
         debugPrint(onError.toString());
       });
 
-      Todo todo = Todo(id: state.todoListMysql.last.id++, title: title);
-      List<Todo> newTodoList = state.todoListMysql;
+      Todo todo = Todo(id: state.todoListFirestore.last.id++, title: title);
+      List<Todo> newTodoList = state.todoListFirestore;
       newTodoList.add(todo);
-      state.setTodoListMysql(newTodoList);
+      state.setTodoListFirestore(newTodoList);
 
       successAlert("Tebrikler");
       formKey.currentState!.reset();

@@ -90,7 +90,6 @@ class _SearchTodoState extends State<SearchTodo> {
       isLoading = false;
     });
 
-    debugPrint(todoListMysql.toString());
     state.setTodoListMysql(todoListMysql);
   }
 }

@@ -5,6 +5,7 @@ class StateModel extends ChangeNotifier {
   int currentIndex = 0;
   String routeName = "/";
   List<Todo> todoListMysql = [];
+  List<Todo> todoListFirestore = [];
 
   void setCurrentIndex(int index) {
     currentIndex = index;
@@ -18,6 +19,12 @@ class StateModel extends ChangeNotifier {
 
   void setTodoListMysql(List<Todo> list) {
     todoListMysql = list;
+
+    notifyListeners();
+  }
+
+  void setTodoListFirestore(List<Todo> list) {
+    todoListFirestore = list;
 
     notifyListeners();
   }

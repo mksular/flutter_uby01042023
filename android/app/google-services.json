@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "749818574509",
+    "project_id": "uby01042023",
+    "storage_bucket": "uby01042023.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:749818574509:android:070b927f2987984ccfb824",
+        "android_client_info": {
+          "package_name": "com.ucuncubinyil.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA18Y7Nik2zKbF9GncOs7Fu6WVGP-i9H1g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

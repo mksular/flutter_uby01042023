@@ -1,14 +1,11 @@
-class Todo {
-  int id;
-  String title;
+class TodoFire {
+  String? id;
+  String? title;
   bool? isComplated;
   bool? isStar;
 
-  Todo(
-      {required this.id,
-      required this.title,
-      this.isComplated = false,
-      this.isStar = false});
+  TodoFire(
+      {this.id, this.title, this.isComplated = false, this.isStar = false});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> data = {};
@@ -23,7 +20,7 @@ class Todo {
   void fromJson(Map<String, dynamic> data) {
     id = data["id"];
     title = data["title"];
-    isComplated = data["title"];
+    isComplated = data["isComplated"];
     isStar = data["isStar"];
   }
 }

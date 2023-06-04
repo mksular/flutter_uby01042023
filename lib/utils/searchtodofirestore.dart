@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/models/state.dart';
-import 'package:myapp/models/todo.dart';
-import 'package:mysql1/mysql1.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:myapp/models/todofire.dart';
 import 'package:provider/provider.dart';
 
 class SearchTodoFirestore extends StatefulWidget {
@@ -14,21 +14,20 @@ class SearchTodoFirestore extends StatefulWidget {
 class _SearchTodoFirestoreState extends State<SearchTodoFirestore> {
   String keyword = "";
   TextEditingController searchController = TextEditingController();
-  List<Todo> todoListMysql = [];
-  late final MySqlConnection conn;
+  List<TodoFire> todoListFirestore = [];
   late StateModel state;
   bool isLoading = false;
+  var colRef = FirebaseFirestore.instance.collection("todo");
 
   @override
   void initState() {
+    getData();
     state = Provider.of<StateModel>(context, listen: false);
-    mysqlConn();
     super.initState();
   }
 
   @override
   void dispose() {
-    conn.close();
     super.dispose();
   }
 
@@ -39,7 +38,7 @@ class _SearchTodoFirestoreState extends State<SearchTodoFirestore> {
       decoration: const InputDecoration(
           border:
               OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          labelText: "Todo Ara",
+          labelText: "Firestore Todo Ara",
           suffixIcon: InkWell(
               child: Icon(
             Icons.search,
@@ -53,43 +52,30 @@ class _SearchTodoFirestoreState extends State<SearchTodoFirestore> {
     );
   }
 
-  Future mysqlConn() async {
-    conn = await MySqlConnection.connect(ConnectionSettings(
-        host: '93.89.225.127',
-        port: 3306,
-        user: 'ideftp1_testus',
-        db: 'ideftp1_testdb',
-        password: '123456aA+-'));
-    getData();
-  }
-
   Future getData() async {
     setState(() {
       isLoading = true;
     });
-    todoListMysql.clear();
-    Results results;
-    if (keyword != "") {
-      results = await conn
-          .query('select * from todo where title like ?', ['%$keyword%']);
-    } else {
-      results = await conn.query('select * from todo');
-    }
+    todoListFirestore.clear();
 
-    results.map((e) {
-      Todo todo = Todo(
-          id: e["id"],
-          title: e["title"],
-          isComplated: e["iscomplated"] == 1 ? true : false,
-          isStar: e["isstar"] == 1 ? true : false);
-      setState(() {
-        todoListMysql.add(todo);
-      });
-    }).toList();
+    colRef.get().then(
+      (value) {
+        value.docs.map((doc) {
+          var data = doc.data();
+          var id = doc.id;
+          TodoFire todo = TodoFire();
+          todo.fromJson(data);
+          todoListFirestore.add(todo);
+        }).toList();
+
+        state.setTodoListFirestore(todoListFirestore);
+      },
+    ).catchError((onError) {
+      debugPrint("hata : $onError");
+    });
+
     setState(() {
       isLoading = false;
     });
-
-    state.setTodoListMysql(todoListMysql);
   }
 }

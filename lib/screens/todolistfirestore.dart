@@ -1,7 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/state.dart';
-import 'package:myapp/models/todo.dart';
-import 'package:myapp/screens/tododetail.dart';
+import 'package:myapp/models/todofire.dart';
+import 'package:myapp/screens/tododetailfirestore.dart';
 import 'package:myapp/utils/myappbar.dart';
 import 'package:myapp/utils/mydrawer.dart';
 import 'package:mysql1/mysql1.dart';
@@ -19,13 +20,14 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
   AutovalidateMode autoValidateMode = AutovalidateMode.disabled;
   late String title;
   late final MySqlConnection conn;
-  late Todo todo;
+  late TodoFire todo;
   bool isObsecure = false;
   bool isLoading = false;
   bool isEdit = false;
 
   TextEditingController titleController = TextEditingController();
   TextEditingController searchController = TextEditingController();
+  var colRef = FirebaseFirestore.instance.collection("todo");
 
   @override
   void initState() {
@@ -116,6 +118,7 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
                             itemBuilder: (BuildContext context, int index) {
                               var element = state.todoListFirestore[index];
                               return ListTile(
+                                subtitle: Text(element.id.toString()),
                                 tileColor: element.isComplated!
                                     ? Colors.red[200]
                                     : Colors.green[200],
@@ -130,7 +133,7 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
                                   value: element.isComplated,
                                 ),
                                 title: Text(
-                                  element.title,
+                                  element.title.toString(),
                                   style: TextStyle(
                                       decoration: element.isComplated!
                                           ? TextDecoration.lineThrough
@@ -174,7 +177,7 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
                                               context,
                                               MaterialPageRoute(
                                                   builder: (context) =>
-                                                      TodoDetail(
+                                                      TodoDetailFirestore(
                                                         todo: element,
                                                       )));
                                         },
@@ -229,23 +232,29 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
         isLoading = true;
         titleController.text = "";
       });
-      await conn.query(
-          'insert into todo(title, iscomplated, isstar) values(?,?,?)',
-          [title, 0, 0]).then((value) {
-        setState(() {
-          isLoading = false;
+
+      TodoFire todo = TodoFire(title: title);
+
+      var data = todo.toJson();
+      String id;
+      colRef.add(data).then((value) {
+        id = value.id;
+        todo.id = id;
+        data = todo.toJson();
+        colRef.doc("todo/$id").set(data).then((value) {
+          List<TodoFire> newTodoList = state.todoListFirestore;
+          newTodoList.add(todo);
+          state.setTodoListFirestore(newTodoList);
         });
       }).catchError((onError) {
-        debugPrint(onError.toString());
+        debugPrint("hata: $onError");
       });
-
-      Todo todo = Todo(id: state.todoListFirestore.last.id++, title: title);
-      List<Todo> newTodoList = state.todoListFirestore;
-      newTodoList.add(todo);
-      state.setTodoListFirestore(newTodoList);
 
       successAlert("Tebrikler");
       formKey.currentState!.reset();
+      setState(() {
+        isLoading = false;
+      });
     } else {
       setState(() {
         autoValidateMode = AutovalidateMode.always;
@@ -253,7 +262,7 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
     }
   }
 
-  Future updateIsComplatedMysql(Todo element) async {
+  Future updateIsComplatedMysql(TodoFire element) async {
     setState(() {
       isLoading = true;
     });
@@ -267,7 +276,7 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
     });
   }
 
-  Future updateIsStarMysql(Todo element) async {
+  Future updateIsStarMysql(TodoFire element) async {
     setState(() {
       isLoading = true;
     });
@@ -281,15 +290,15 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
     });
   }
 
-  void updateTodo(Todo element) {
+  void updateTodo(TodoFire element) {
     setState(() {
-      titleController.text = element.title;
+      titleController.text = element.title.toString();
       isEdit = true;
       todo = element;
     });
   }
 
-  Future updateTodoMysql(Todo element) async {
+  Future updateTodoMysql(TodoFire element) async {
     setState(() {
       isLoading = true;
     });
@@ -306,7 +315,7 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
     });
   }
 
-  Future deleteTodoMysql(Todo element) async {
+  Future deleteTodoMysql(TodoFire element) async {
     setState(() {
       isLoading = true;
     });

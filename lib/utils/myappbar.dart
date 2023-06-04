@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/models/state.dart';
 import 'package:myapp/utils/searchtodo.dart';
+import 'package:myapp/utils/searchtodofirestore.dart';
 import 'package:provider/provider.dart';
 
 class MyAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -27,7 +28,9 @@ class _MyAppBarState extends State<MyAppBar> {
                 ? const Text("Todolist")
                 : state.routeName == "/todolistmysql"
                     ? const SearchTodo()
-                    : const Text("Todolist Firestore"),
+                    : state.routeName == "/todolistfirestore"
+                        ? const SearchTodoFirestore()
+                        : const Text(""),
       );
     });
   }

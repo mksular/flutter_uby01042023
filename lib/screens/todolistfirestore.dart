@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/state.dart';
 import 'package:myapp/models/todo.dart';
@@ -27,13 +26,9 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
 
   TextEditingController titleController = TextEditingController();
   TextEditingController searchController = TextEditingController();
-  final colRef = FirebaseFirestore.instance.collection("todo");
-  late StateModel state;
 
   @override
   void initState() {
-    state = Provider.of<StateModel>(context, listen: false);
-    getData();
     super.initState();
   }
 
@@ -225,10 +220,6 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
         );
       },
     );
-  }
-
-  Future getData() async {
-    await colRef.get().then((value) => debugPrint(value.toString()));
   }
 
   Future addTodo(StateModel state) async {

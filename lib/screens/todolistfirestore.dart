@@ -232,28 +232,22 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
         isLoading = true;
         titleController.text = "";
       });
+      String id = colRef.doc().id;
 
-      TodoFire todo = TodoFire(title: title);
+      TodoFire todo = TodoFire(id: id, title: title);
 
       var data = todo.toJson();
-      String id;
-      colRef.add(data).then((value) {
-        id = value.id;
-        todo.id = id;
-        data = todo.toJson();
-        colRef.doc("todo/$id").set(data).then((value) {
-          List<TodoFire> newTodoList = state.todoListFirestore;
-          newTodoList.add(todo);
-          state.setTodoListFirestore(newTodoList);
+      colRef.doc(id).set(data).then((value) {
+        successAlert("Tebrikler");
+        formKey.currentState!.reset();
+        List<TodoFire> newList = state.todoListFirestore;
+        newList.add(todo);
+        state.setTodoListFirestore(newList);
+        setState(() {
+          isLoading = false;
         });
       }).catchError((onError) {
-        debugPrint("hata: $onError");
-      });
-
-      successAlert("Tebrikler");
-      formKey.currentState!.reset();
-      setState(() {
-        isLoading = false;
+        debugPrint(onError.toString());
       });
     } else {
       setState(() {

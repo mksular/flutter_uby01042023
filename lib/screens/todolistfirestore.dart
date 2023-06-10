@@ -47,7 +47,7 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
         floatingActionButton: FloatingActionButton(
           heroTag: null,
           onPressed: () {
-            isEdit ? updateTodoMysql(todo) : addTodo(state);
+            isEdit ? updateTodoFirebase(todo) : addTodo(state);
           },
           child: Icon(isEdit ? Icons.save : Icons.add),
         ),
@@ -128,7 +128,8 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
                                       element.isComplated =
                                           !element.isComplated!;
                                     });
-                                    updateIsComplatedMysql(element);
+                                    var data = element.toJson();
+                                    colRef.doc(element.id).set(data);
                                   },
                                   value: element.isComplated,
                                 ),
@@ -154,7 +155,8 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
                                           setState(() {
                                             element.isStar = !element.isStar!;
                                           });
-                                          updateIsStarMysql(element);
+                                          var data = element.toJson();
+                                          colRef.doc(element.id).set(data);
                                         },
                                         child: Icon(
                                           Icons.star,
@@ -168,7 +170,8 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
                                             state.todoListFirestore
                                                 .remove(element);
                                           });
-                                          deleteTodoMysql(element);
+
+                                          colRef.doc(element.id).delete();
                                         },
                                         child: const Icon(Icons.delete)),
                                     InkWell(
@@ -256,34 +259,6 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
     }
   }
 
-  Future updateIsComplatedMysql(TodoFire element) async {
-    setState(() {
-      isLoading = true;
-    });
-    await conn.query('update todo set iscomplated=? where id=?',
-        [element.isComplated, element.id]).then((value) {
-      setState(() {
-        isLoading = false;
-      });
-    }).catchError((onError) {
-      debugPrint(onError);
-    });
-  }
-
-  Future updateIsStarMysql(TodoFire element) async {
-    setState(() {
-      isLoading = true;
-    });
-    await conn.query('update todo set isstar=? where id=?',
-        [element.isStar, element.id]).then((value) {
-      setState(() {
-        isLoading = false;
-      });
-    }).catchError((onError) {
-      debugPrint(onError);
-    });
-  }
-
   void updateTodo(TodoFire element) {
     setState(() {
       titleController.text = element.title.toString();
@@ -292,33 +267,16 @@ class _TodoListFirestoreState extends State<TodoListFirestore> {
     });
   }
 
-  Future updateTodoMysql(TodoFire element) async {
+  Future updateTodoFirebase(TodoFire todo) async {
     setState(() {
       isLoading = true;
     });
-    await conn.query('update todo set title=? where id=?',
-        [titleController.text, element.id]).then((value) {
-      setState(() {
-        isLoading = false;
-        isEdit = false;
-        titleController.text = "";
-      });
-      successAlert("Kayıt Güncellendi!");
-    }).catchError((onError) {
-      debugPrint(onError);
-    });
-  }
-
-  Future deleteTodoMysql(TodoFire element) async {
-    setState(() {
-      isLoading = true;
-    });
-    await conn.query('delete from todo where id=?', [element.id]).then((value) {
+    todo.title = titleController.text;
+    var data = todo.toJson();
+    colRef.doc(todo.id).set(data).then((value) {
       setState(() {
         isLoading = false;
       });
-    }).catchError((onError) {
-      debugPrint(onError);
     });
   }
 }
